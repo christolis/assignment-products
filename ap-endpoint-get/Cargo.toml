@@ -1,0 +1,15 @@
+[package]
+name = "ap-endpoint-get"
+version = "0.1.0"
+description = "Handles fetching product information"
+edition = "2021"
+
+[dependencies]
+aws-config = { workspace = true }
+aws-sdk-dynamodb = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+lambda_http = { workspace = true }
+tokio = { workspace = true }
+ap-model = { path = "../ap-model" }

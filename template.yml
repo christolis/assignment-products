@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Assignment - Products API
+Resources:
+  DynamoDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: products
+      KeySchema:
+        - AttributeName: ProductId
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: ProductId
+          AttributeType: S
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stack ${AWS::StackName}
+        - ResourceName: Api
+      StageName: Prod
+      DefinitionBody:
+        openapi: '3.0'
+        info: {}
+        paths:
+          /items:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ItemsGetFunction.Arn}/invocations
+              responses: {}
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+      Cors:
+        MaxAge: 5
+  ItemsGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: target/lambda/ap-endpoint-get
+      Architectures:
+        - arm64
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Timeout: 5
+      MemorySize: 3008
+      Events:
+        ApiGETitems:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: GET
+            RestApiId: !Ref Api
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !Ref DynamoDB
+          DYNAMODB_TABLE_ARN: !GetAtt DynamoDB.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDB
