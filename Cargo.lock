@@ -27,6 +27,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "ap-endpoint-add"
+version = "0.1.0"
+dependencies = [
+ "ap-model",
+ "aws-config",
+ "aws-sdk-dynamodb",
+ "lambda_http",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "ap-endpoint-get"
 version = "0.1.0"
 dependencies = [

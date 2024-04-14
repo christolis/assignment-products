@@ -33,6 +33,13 @@ Resources:
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ItemsGetFunction.Arn}/invocations
               responses: {}
+          /item:
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ItemAddFunction.Arn}/invocations
+              responses: {}
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
       Cors:
@@ -61,3 +68,36 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DynamoDB
+  ItemAddFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: ItemAddFunction
+      CodeUri: target/lambda/ap-endpoint-add
+      Runtime: provided.al2023
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Events:
+        ApiPUTitem:
+          Type: Api
+          Properties:
+            Path: /item
+            Method: PUT
+            RestApiId: !Ref Api
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !Ref DynamoDB
+          DYNAMODB_TABLE_ARN: !GetAtt DynamoDB.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDB
+      Architectures:
+        - arm64
+      Handler: bootstrap
+  ItemAddFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ItemAddFunction}
