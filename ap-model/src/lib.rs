@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use aws_sdk_dynamodb::types::AttributeValue;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 fn as_string(val: Option<&AttributeValue>, default: &String) -> String {
     if let Some(v) = val {
@@ -24,6 +24,7 @@ fn as_u32(val: Option<&AttributeValue>, default: u32) -> u32 {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Item {
+    #[serde(rename = "ProductId")]
     product_id: u32,
     name: String,
     stock: u32,
